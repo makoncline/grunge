@@ -29,12 +29,12 @@ get_settings, update_settings, apply_preset, get_image (base64 PNG), get_code.
 
 ## Use the engine yourself
 
-- [engine.js](https://grunge.makon.dev/engine.js): ES module, no dependencies. Works in browsers, Node.js, Deno and Bun. It is the code the site runs, so the same settings and seed reproduce a site render exactly.
+- [engine.js](https://grunge.makon.dev/engine.js): ES module, no dependencies. Works in browsers, Node.js, Deno and Bun. Browsers and Deno can import the URL directly. For Node.js, download the file first (`curl -O https://grunge.makon.dev/engine.js`) and import `./engine.js`. It is the code the site runs, so the same settings and seed reproduce a site render exactly.
 - [engine.ts](https://grunge.makon.dev/engine.ts): TypeScript source with types.
 - Masks: https://grunge.makon.dev/masks/01-breaking-foam.png, 02-night-dust.png, 03-deep-field.png, 04-dry-ink.png (3840 × 2160 grayscale; white applies the effect).
 
 ```js
-import { wear, grayFromRgba } from "https://grunge.makon.dev/engine.js";
+import { wear, grayFromRgba } from "./engine.js"; // or the URL in browsers and Deno
 // artwork: { data: Uint8ClampedArray RGBA, width, height } with a transparent area, at the final canvas size.
 // mask: grayFromRgba(decoded mask PNG) or { data: Float32Array 0–1, width, height }.
 const layer = wear(artwork, mask, { chips: 40, edge: 80, spray: 45, mottle: 35, displacement: 50, seed: 1402 });
