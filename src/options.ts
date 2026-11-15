@@ -9,7 +9,7 @@ export const FONTS: Record<string, { family: string; weight: number }> = {
   Oswald: { family: "Oswald", weight: 700 },
 };
 
-export const SIZES = ["1280x720", "1920x1080", "3840x2160", "1080x1080", "1080x1920"] as const;
+export const SIZES = ["1280x720", "1920x1080", "3840x2160", "1200x630", "1080x1080", "1080x1920"] as const;
 
 export interface Settings extends Knobs {
   text: string;
