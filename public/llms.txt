@@ -1,0 +1,52 @@
+# Grunge
+
+> Seeded print wear for lettering and artwork. https://grunge.makon.dev renders on the user's device. Source: https://github.com/makoncline/grunge (MIT).
+
+## Knobs
+
+Each knob runs from 0 (off) to 100 (far too much). Steps look about even.
+
+- chips: ink missing inside the shapes.
+- edge: chips that break the outline. At viewing size, this does more than any other knob.
+- spray: ink flecks outside the shapes. Use it for energy; keep it off for calm work.
+- mottle: uneven ink density. Use 10–35 as support. Alone or above 40 it looks like a digital gradient.
+- displacement: gentle outline warp. Keep it under 50; above 70 strokes bend.
+
+A light ragged outline is always on.
+
+## Presets
+
+- professional: chips 0, edge 35, spray 0, mottle 10, displacement 0, mask 02-night-dust
+- family-dinner: chips 10, edge 45, spray 0, mottle 20, displacement 15, mask 04-dry-ink
+- shred: chips 25, edge 25, spray 65, mottle 25, displacement 35, mask 01-breaking-foam
+- heavy-metal: chips 40, edge 80, spray 45, mottle 35, displacement 50, mask 03-deep-field
+- wtf: chips 70, edge 70, spray 100, mottle 60, displacement 90, mask 01-breaking-foam
+
+## Use it on the page (WebMCP)
+
+In Chrome with WebMCP enabled, the page registers tools on `document.modelContext`:
+get_settings, update_settings, apply_preset, get_image (base64 PNG), get_code.
+
+## Use the engine yourself
+
+- [engine.js](https://grunge.makon.dev/engine.js): ES module, no dependencies. Works in browsers, Node.js, Deno and Bun. It is the code the site runs, so the same settings and seed reproduce a site render exactly.
+- [engine.ts](https://grunge.makon.dev/engine.ts): TypeScript source with types.
+- Masks: https://grunge.makon.dev/masks/01-breaking-foam.png, 02-night-dust.png, 03-deep-field.png, 04-dry-ink.png (3840 × 2160 grayscale; white applies the effect).
+
+```js
+import { wear, grayFromRgba } from "https://grunge.makon.dev/engine.js";
+// artwork: { data: Uint8ClampedArray RGBA, width, height } with a transparent area, at the final canvas size.
+// mask: grayFromRgba(decoded mask PNG) or { data: Float32Array 0–1, width, height }.
+const layer = wear(artwork, mask, { chips: 40, edge: 80, spray: 45, mottle: 35, displacement: 50, seed: 1402 });
+// layer is RGBA at the artwork size. Colours come from the artwork.
+```
+
+- [grunge.py](https://grunge.makon.dev/grunge.py): Python CLI with the same knobs and presets (needs Pillow, NumPy, SciPy). Pass a mask path with --mask. It uses a different random generator, so marks land in different places than on the site.
+
+```sh
+python grunge.py title.png renders --preset heavy-metal --mask 03-deep-field.png --seed 1402 --paper '#e9e1cf'
+```
+
+## Review
+
+Check the result at full size and at delivery size. The words come first and the texture second. Keep some clean areas.
