@@ -7,7 +7,8 @@ const EVENTS = new Set(["page_view", "render_settled", "preset", "download", "co
 const MAX_BODY = 2048;
 
 function log(level: "info" | "warn", fields: Record<string, unknown>) {
-  console.log(JSON.stringify({ level, service: "grunge", ...fields }));
+  const message = fields.event === "asset_request" ? `asset ${fields.path} ${fields.status}` : `event ${fields.event}`;
+  console.log(JSON.stringify({ message, level, service: "grunge", ...fields }));
 }
 
 function context(request: Request, env: Env) {
