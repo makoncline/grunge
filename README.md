@@ -22,7 +22,7 @@ pnpm preview    # built site with the Worker
 
 ## Deploy
 
-Merges to `main` deploy to production through Cloudflare Workers Builds (`pnpm run build` then `npx wrangler deploy`). `pnpm deploy` deploys from a local checkout.
+Pull requests run `pnpm check`. Merges to `main` run `pnpm check` and then `wrangler deploy` in GitHub Actions (`.github/workflows/deploy.yml`). The `CLOUDFLARE_API_TOKEN` secret is scoped to Workers in this account and the makon.dev zone.
 
 ## License
 
