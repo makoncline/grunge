@@ -65,6 +65,13 @@ test("worn pixels keep the artwork colour, and a cache gives the same result", (
     if (first.data[i * 4 + 3] > 0) assert.deepEqual([...first.data.subarray(i * 4, i * 4 + 3)], [200, 40, 20]);
 });
 
+test("all knobs at zero return the artwork unchanged", () => {
+  const off = wear(source, mask, { chips: 0, edge: 0, spray: 0, mottle: 0, displacement: 0, seed: 3 });
+  assert.deepEqual(off.data, source.data);
+  const slight = wear(source, mask, { mottle: 1, seed: 3 });
+  assert.notDeepEqual(slight.data, source.data);
+});
+
 test("artwork without a transparent area is rejected", () => {
   const opaque = { data: new Uint8ClampedArray(width * height * 4).fill(255), width, height };
   assert.throws(() => wear(opaque, mask, {}), /transparent area/);

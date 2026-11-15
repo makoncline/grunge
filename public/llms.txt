@@ -12,7 +12,7 @@ Each knob runs from 0 (off) to 100 (far too much). Steps look about even.
 - mottle: uneven ink density. Use 10–35 as support. Alone or above 40 it looks like a digital gradient.
 - displacement: gentle outline warp. Keep it under 50; above 70 strokes bend.
 
-A light ragged outline is always on.
+A light ragged outline fades in over the first 10 points of the strongest knob. With every knob at 0, the artwork is unchanged.
 
 ## Presets
 

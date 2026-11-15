@@ -13,6 +13,7 @@ from scipy.ndimage import distance_transform_edt, gaussian_filter, label, map_co
 
 ASSETS = Path(__file__).resolve().parent.parent / "assets"
 REFERENCE_SIZE = (1280, 720)
+OUTLINE_RAMP = 10
 KNOBS = ("chips", "edge", "spray", "mottle", "displacement")
 MAXIMUM = {"chips": 20, "edge": 40, "spray": 16, "mottle": 14, "displacement": 12}
 PRESETS = {
@@ -91,6 +92,10 @@ def wear(artwork, mask="03-deep-field", seed=1402, chips=0, edge=0, spray=0, mot
     texture = load_mask(mask_path(mask))
     levels = {"chips": chips, "edge": edge, "spray": spray, "mottle": mottle, "displacement": displacement}
     c, e, s, m, d = (multiplier(knob, float(np.clip(levels[knob], 0, 100))) for knob in KNOBS)
+    strongest = max(float(np.clip(levels[knob], 0, 100)) for knob in KNOBS)
+    if strongest == 0:
+        return artwork.convert("RGBA").copy()
+    outline = min(1.0, strongest / OUTLINE_RAMP)
 
     _, solid_index = distance_transform_edt(clean < 0.9, return_indices=True)
     colour = rgba[..., :3][solid_index[0], solid_index[1]]
@@ -108,7 +113,7 @@ def wear(artwork, mask="03-deep-field", seed=1402, chips=0, edge=0, spray=0, mot
     alpha = map_coordinates(clean, np.indices(shape, dtype=float) + offsets * 0.4375 * d * scale, order=1)
     spread = gaussian_filter(alpha, 0.9 * scale)
     edge_zone = smoothstep(0, 0.2, spread) * (1 - smoothstep(0.8, 1, spread))
-    alpha = smoothstep(0.32, 0.68, spread + 0.07 * rough * edge_zone)
+    alpha = alpha * (1 - outline) + smoothstep(0.32, 0.68, spread + 0.07 * rough * edge_zone) * outline
     inside = alpha > 0
     distance_out, nearest = distance_transform_edt(~inside, return_indices=True)
     distance_in = distance_transform_edt(alpha > 0.5)

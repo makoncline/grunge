@@ -41,6 +41,8 @@ export const PRESETS: Record<string, Knobs & { mask: MaskName; use: string }> = 
 };
 
 const REFERENCE_PIXELS = 1280 * 720;
+/** The printed outline reaches full strength when the strongest knob reaches this value. */
+const OUTLINE_RAMP = 10;
 
 export function multiplier(knob: Knob, percent: number): number {
   const level = Math.min(100, Math.max(0, percent)) / 100;
@@ -371,6 +373,8 @@ export function wear(artwork: Rgba, mask: Gray | PreparedMask, options: WearOpti
   const s = multiplier("spray", options.spray ?? 0);
   const m = multiplier("mottle", options.mottle ?? 0);
   const d = multiplier("displacement", options.displacement ?? 0);
+  const strongest = Math.max(...KNOBS.map((knob) => Math.min(100, Math.max(0, options[knob] ?? 0))));
+  const outline = Math.min(1, strongest / OUTLINE_RAMP);
 
   const clean = new Float32Array(pixels);
   let visible = false, transparent = false;
@@ -380,6 +384,7 @@ export function wear(artwork: Rgba, mask: Gray | PreparedMask, options: WearOpti
     if (clean[i] === 0) transparent = true;
   }
   if (!visible || !transparent) throw new Error("Use artwork with visible pixels and a transparent area.");
+  if (strongest === 0) return { data: Uint8ClampedArray.from(artwork.data), width, height };
 
   const notSolid = new Uint8Array(pixels);
   for (let i = 0; i < pixels; i++) notSolid[i] = clean[i] < 0.9 ? 1 : 0;
@@ -431,12 +436,12 @@ export function wear(artwork: Rgba, mask: Gray | PreparedMask, options: WearOpti
       alpha[i] = (at(x0, y0) * (1 - fx) + at(x0 + 1, y0) * fx) * (1 - fy) + (at(x0, y0 + 1) * (1 - fx) + at(x0 + 1, y0 + 1) * fx) * fy;
     }
 
-  // Always-on printed outline: slight ink spread and a ragged edge.
+  // Printed outline: slight ink spread and a ragged edge. It fades in with the strongest knob.
   const spread = blur(alpha, width, height, 0.9 * scale);
-  alpha = new Float32Array(pixels);
   for (let i = 0; i < pixels; i++) {
     const edgeZone = smoothstep(0, 0.2, spread[i]) * (1 - smoothstep(0.8, 1, spread[i]));
-    alpha[i] = smoothstep(0.32, 0.68, spread[i] + 0.07 * rough[i] * edgeZone);
+    const printed = smoothstep(0.32, 0.68, spread[i] + 0.07 * rough[i] * edgeZone);
+    alpha[i] = alpha[i] * (1 - outline) + printed * outline;
   }
 
   const outside = new Uint8Array(pixels), core = new Uint8Array(pixels);
