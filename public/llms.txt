@@ -47,6 +47,8 @@ const layer = wear(artwork, mask, { chips: 40, edge: 80, spray: 45, mottle: 35, 
 python grunge.py title.png renders --preset heavy-metal --mask 03-deep-field.png --seed 1402 --paper '#e9e1cf'
 ```
 
+The repository and skill CLI use bundled masks by default. For a downloaded `grunge.py`, download a mask and pass its path with `--mask`. Each variant exports a transparent `-layer.png`. With `--background` or `--paper`, it also exports an RGB preview. Previews and contact sheets use an opaque `#161616` matte behind any remaining alpha. This does not change the transparent layer.
+
 ## Review
 
 Check the result at full size and at delivery size. The words come first and the texture second. Keep some clean areas.

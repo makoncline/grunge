@@ -11,7 +11,8 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from scipy.ndimage import distance_transform_edt, gaussian_filter, label, map_coordinates, maximum_filter
 
-ASSETS = Path(__file__).resolve().parent.parent / "assets"
+ASSETS = Path(__file__).resolve().parent.parent / "public" / "masks"
+PREVIEW_MATTE = "#161616"
 REFERENCE_SIZE = (1280, 720)
 OUTLINE_RAMP = 10
 KNOBS = ("chips", "edge", "spray", "mottle", "displacement")
@@ -136,18 +137,24 @@ def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def flatten(image):
+    matte = Image.new("RGBA", image.size, PREVIEW_MATTE)
+    return Image.alpha_composite(matte, image.convert("RGBA")).convert("RGB")
+
+
 def contact_sheet(images, size):
     columns = min(2, len(images))
     tile_w = 640
     tile_h = round(tile_w * size[1] / size[0])
     rows = (len(images) + columns - 1) // columns
-    sheet = Image.new("RGB", (columns * tile_w, rows * (tile_h + 31)), "#161616")
+    sheet = Image.new("RGB", (columns * tile_w, rows * (tile_h + 31)), PREVIEW_MATTE)
     draw = ImageDraw.Draw(sheet)
     font = ImageFont.load_default(size=17)
     for index, image in enumerate(images):
         left, top = index % columns * tile_w, index // columns * (tile_h + 31)
         draw.text((left + 10, top + 5), f"Variation {index + 1}", fill="white", font=font)
-        sheet.paste(image.convert("RGB").resize((tile_w, tile_h), Image.Resampling.LANCZOS), (left, top + 31))
+        tile = image.convert("RGBA").resize((tile_w, tile_h), Image.Resampling.LANCZOS)
+        sheet.paste(flatten(tile), (left, top + 31))
     return sheet
 
 
@@ -159,8 +166,8 @@ def main():
     for knob in KNOBS:
         parser.add_argument(f"--{knob}", type=float, help=f"0 to 100. Overrides the preset.")
     parser.add_argument("--mask", help="Bundled mask name or a grayscale mask path. Overrides the preset.")
-    parser.add_argument("--background", type=Path, help="Background image at the same canvas size.")
-    parser.add_argument("--paper", help="Solid background colour, such as '#e9e1cf'.")
+    parser.add_argument("--background", type=Path, help="Background at the canvas size. Preview alpha uses an opaque #161616 matte.")
+    parser.add_argument("--paper", help="Background colour, such as '#e9e1cf'. Preview alpha uses an opaque #161616 matte.")
     parser.add_argument("--seed", type=int, help="Omit to choose and record a new seed.")
     parser.add_argument("--variants", type=int, default=1, help="Consecutive seeds to render.")
     args = parser.parse_args()
@@ -212,8 +219,8 @@ def main():
         layer.save(args.output / f"{name}-layer.png")
         preview = layer
         if base is not None:
-            preview = Image.alpha_composite(base, layer)
-            preview.convert("RGB").save(args.output / f"{name}.png")
+            preview = flatten(Image.alpha_composite(base, layer))
+            preview.save(args.output / f"{name}.png")
         previews.append(preview)
         receipt["variants"].append({"seed": variant_seed, "layer": f"{name}-layer.png", "image": f"{name}.png" if base is not None else None})
     if args.variants > 1:
