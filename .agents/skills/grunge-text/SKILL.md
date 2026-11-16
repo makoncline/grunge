@@ -17,7 +17,7 @@ Read [llms.txt](https://grunge.makon.dev/llms.txt) for details.
 
 Make a transparent PNG of the artwork at the final canvas size, with the words or graphic in their final position. Keep the editable source. Keep small copy, labels, and logos that must stay clean on separate layers.
 
-Set up the isolated Python environment from the repository root:
+Global discovery entries link to this skill in the Grunge checkout. Resolve the link to find that checkout. Set up the isolated Python environment from its root:
 
 ```sh
 uv venv .venv
